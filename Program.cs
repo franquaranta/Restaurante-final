@@ -4,6 +4,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using restaurant_api.Repositories.Interfaces;
+using restaurant_api.Repositories.Implementations;
+using restaurant_api.Services.Interfaces;
+using restaurant_api.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,9 +38,9 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.Http, 
+        Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
-        BearerFormat = "JWT", 
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = "Introduce 'Bearer' [espacio] y luego tu token. \n\nEjemplo: 'Bearer eyJhbGciOi...'"
     });
@@ -64,9 +68,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 var databasePath = connectionString.Replace("Data Source=", $"Data Source={contentRoot}{System.IO.Path.DirectorySeparatorChar}");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => 
-    options.UseSqlite(databasePath) 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(databasePath)
 );
+
+// Repositories 
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+// Services
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 
