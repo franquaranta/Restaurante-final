@@ -19,4 +19,20 @@ public class CategoryRepository(ApplicationDbContext context) : ICategoryReposit
     {
         return _context.Categorias.ToList();
     }
+
+    public async Task<Categoria?> GetByIdAsync(int id)
+    {
+        return await _context.Categorias.FindAsync(id);
+    }
+
+    public async Task UpdateAsync(Categoria categoria)
+    {
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Categoria categoria)
+    {
+        _context.Categorias.Remove(categoria);
+        await _context.SaveChangesAsync();
+    }
 }

@@ -5,5 +5,7 @@ namespace restaurant_api.Services.Interfaces;
 public interface ICategoryService
 {
     Task CreateCategory(SolicitudCrearCategoria solicitudCrearCategoria);
-    public List<CategoriaDTO> GetCategories();
+    List<CategoriaDTO> GetCategories();
+    Task<CategoriaDTO?> UpdateCategoryAsync(int id, EditarCategoriaDto dto);
+    Task<bool> DeleteCategoryAsync(int id);
 }

@@ -26,4 +26,24 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Nombre = c.Nombre,
         }).ToList();
     }
+
+    public async Task<CategoriaDTO?> UpdateCategoryAsync(int id, EditarCategoriaDto dto)
+    {
+        var categoria = await _categoryRepository.GetByIdAsync(id);
+        if (categoria == null) return null;
+
+        if (!string.IsNullOrEmpty(dto.Nombre)) categoria.Nombre = dto.Nombre;
+
+        await _categoryRepository.UpdateAsync(categoria);
+        return new CategoriaDTO { Nombre = categoria.Nombre };
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        var categoria = await _categoryRepository.GetByIdAsync(id);
+        if (categoria == null) return false;
+
+        await _categoryRepository.DeleteAsync(categoria);
+        return true;
+    }
 }

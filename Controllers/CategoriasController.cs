@@ -10,10 +10,9 @@ public class CategoriasController(ICategoryService categoryService) : Controller
     private readonly ICategoryService _categoryService = categoryService;
 
     [HttpGet]
-    public async Task<IActionResult> GetCategorias()
+    public IActionResult GetCategorias()
     {
         List<CategoriaDTO> categoriesDtos = _categoryService.GetCategories();
-
         return Ok(categoriesDtos);
     }
 
@@ -22,37 +21,34 @@ public class CategoriasController(ICategoryService categoryService) : Controller
     public async Task<IActionResult> CrearCategoria(SolicitudCrearCategoria solicitudCrearCategoria)
     {
         await _categoryService.CreateCategory(solicitudCrearCategoria);
-
         return Ok();
     }
 
-    //[HttpPut("{id}")]
-    //[Authorize]
-    //public async Task<IActionResult> EditarCategoria(int id, [FromBody] EditarCategoriaDto editarCategoriaDto)
-    //{
-    //    var categoriaExistente = await _context.Categorias.FindAsync(id);
-    //    if (categoriaExistente == null)
-    //    {
-    //        return NotFound("Categoría no encontrada.");
-    //    }
-    //    if (!string.IsNullOrEmpty(editarCategoriaDto.Nombre))
-    //    {
-    //        categoriaExistente.Nombre = editarCategoriaDto.Nombre;
-    //    }
+    [HttpPut("{id}")]
+    [Authorize]
+    public async Task<IActionResult> EditarCategoria(int id, [FromBody] EditarCategoriaDto editarCategoriaDto)
+    {
+        var resultado = await _categoryService.UpdateCategoryAsync(id, editarCategoriaDto);
 
-    //    await _context.SaveChangesAsync();
+        if (resultado == null)
+        {
+            return NotFound("Categoría no encontrada.");
+        }
 
-    //    return Ok(categoriaExistente);
-    //}
+        return Ok(resultado);
+    }
 
-    //[HttpDelete("{id}")]
-    //[Authorize]
-    //public async Task<IActionResult> BorrarCategoria(int id)
-    //{
-    //    var categoria = await _context.Categorias.FindAsync(id);
-    //    if (categoria == null) return NotFound();
-    //    _context.Categorias.Remove(categoria);
-    //    await _context.SaveChangesAsync();
-    //    return NoContent();
-    //}
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<IActionResult> BorrarCategoria(int id)
+    {
+        var eliminada = await _categoryService.DeleteCategoryAsync(id);
+
+        if (!eliminada)
+        {
+            return NotFound("Categoría no encontrada.");
+        }
+
+        return NoContent();
+    }
 }

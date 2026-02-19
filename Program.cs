@@ -72,11 +72,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(databasePath)
 );
 
-// Repositories 
+// Repositories
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IRestauranteRepository, RestauranteRepository>();
 
 // Services
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
+builder.Services.AddScoped<IRestauranteService, RestauranteService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
