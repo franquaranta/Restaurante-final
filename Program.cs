@@ -66,7 +66,7 @@ var contentRoot = builder.Environment.ContentRootPath;
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var databasePath = connectionString.Replace("Data Source=", $"Data Source={contentRoot}{System.IO.Path.DirectorySeparatorChar}");
+var databasePath = connectionString!.Replace("Data Source=", $"Data Source={contentRoot}{System.IO.Path.DirectorySeparatorChar}");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(databasePath)

@@ -35,8 +35,19 @@ public class RestaurantesController(IRestauranteService restauranteService) : Ba
     [HttpGet("{idRestaurante}/menu")]
     public async Task<IActionResult> GetMenu(int idRestaurante)
     {
-        var menu = await _restauranteService.GetMenuAsync(idRestaurante);
-        return Ok(menu);
+        try
+        {
+            var menu = await _restauranteService.GetMenuAsync(idRestaurante);
+
+            if (menu.Count == 0)
+                return NotFound("El restaurante no tiene productos en su menú.");
+
+            return Ok(menu);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpGet("mi-cuenta")]

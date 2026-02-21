@@ -26,6 +26,10 @@ public class RestauranteService(
 
     public async Task<List<ProductoResponseDto>> GetMenuAsync(int restauranteId)
     {
+        var restaurante = await _restauranteRepository.GetByIdAsync(restauranteId);
+        if (restaurante == null)
+            throw new KeyNotFoundException("Restaurante no encontrado.");
+
         var productos = await _productoRepository.GetByRestauranteAsync(restauranteId);
         return productos.Select(p => new ProductoResponseDto
         {

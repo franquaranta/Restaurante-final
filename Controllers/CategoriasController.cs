@@ -5,14 +5,14 @@ using restaurant_api.Services.Interfaces;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CategoriasController(ICategoryService categoryService) : ControllerBase
+public class CategoriasController(ICategoryService categoryService) : BaseRestauranteController
 {
     private readonly ICategoryService _categoryService = categoryService;
 
     [HttpGet]
     public IActionResult GetCategorias()
     {
-        List<CategoriaDTO> categoriesDtos = _categoryService.GetCategories();
+        List<CategoriaResponseDto> categoriesDtos = _categoryService.GetCategories();
         return Ok(categoriesDtos);
     }
 
@@ -20,19 +20,25 @@ public class CategoriasController(ICategoryService categoryService) : Controller
     [Authorize]
     public async Task<IActionResult> CrearCategoria(SolicitudCrearCategoria solicitudCrearCategoria)
     {
-        await _categoryService.CreateCategory(solicitudCrearCategoria);
-        return Ok();
+        var restauranteId = GetRestauranteIdDesdeToken();
+        if (restauranteId == null) return Unauthorized();
+
+        await _categoryService.CreateCategory(solicitudCrearCategoria, restauranteId.Value);
+        return Ok("Categoría creada exitosamente.");
     }
 
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> EditarCategoria(int id, [FromBody] EditarCategoriaDto editarCategoriaDto)
     {
-        var resultado = await _categoryService.UpdateCategoryAsync(id, editarCategoriaDto);
+        var restauranteId = GetRestauranteIdDesdeToken();
+        if (restauranteId == null) return Unauthorized();
+
+        var resultado = await _categoryService.UpdateCategoryAsync(id, editarCategoriaDto, restauranteId.Value);
 
         if (resultado == null)
         {
-            return NotFound("Categoría no encontrada.");
+            return NotFound("Categoría no encontrada o no pertenece a este restaurante.");
         }
 
         return Ok(resultado);
@@ -42,11 +48,14 @@ public class CategoriasController(ICategoryService categoryService) : Controller
     [Authorize]
     public async Task<IActionResult> BorrarCategoria(int id)
     {
-        var eliminada = await _categoryService.DeleteCategoryAsync(id);
+        var restauranteId = GetRestauranteIdDesdeToken();
+        if (restauranteId == null) return Unauthorized();
+
+        var eliminada = await _categoryService.DeleteCategoryAsync(id, restauranteId.Value);
 
         if (!eliminada)
         {
-            return NotFound("Categoría no encontrada.");
+            return NotFound("Categoría no encontrada o no pertenece a este restaurante.");
         }
 
         return NoContent();

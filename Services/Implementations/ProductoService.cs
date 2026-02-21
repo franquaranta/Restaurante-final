@@ -5,9 +5,12 @@ using restaurant_api.Services.Interfaces;
 
 namespace restaurant_api.Services.Implementations;
 
-public class ProductoService(IProductoRepository productoRepository) : IProductoService
+public class ProductoService(
+    IProductoRepository productoRepository,
+    ICategoryRepository categoryRepository) : IProductoService
 {
     private readonly IProductoRepository _productoRepository = productoRepository;
+    private readonly ICategoryRepository _categoryRepository = categoryRepository;
 
     public async Task<ProductoResponseDto?> GetDetalleAsync(int id)
     {
@@ -30,6 +33,10 @@ public class ProductoService(IProductoRepository productoRepository) : IProducto
 
     public async Task<List<ProductoResponseDto>> GetPorCategoriaAsync(int categoriaId)
     {
+        var categoria = await _categoryRepository.GetByIdAsync(categoriaId);
+        if (categoria == null)
+            throw new KeyNotFoundException("La categoría indicada no existe.");
+
         var productos = await _productoRepository.GetByCategoriaAsync(categoriaId);
         return productos.Select(ToDto).ToList();
     }
@@ -46,8 +53,12 @@ public class ProductoService(IProductoRepository productoRepository) : IProducto
         return productos.Select(ToDto).ToList();
     }
 
-    public async Task<ProductoResponseDto> CrearAsync(CrearProductoDto dto, int restauranteId)
+    public async Task<ProductoResponseDto?> CrearAsync(CrearProductoDto dto, int restauranteId)
     {
+        var categoria = await _categoryRepository.GetByIdAsync(dto.CategoriaId);
+        if (categoria == null || categoria.RestauranteId != restauranteId)
+            throw new ArgumentException("La categoría indicada no existe o no pertenece a este restaurante.");
+
         var producto = new Producto
         {
             Nombre = dto.Nombre,
@@ -72,8 +83,15 @@ public class ProductoService(IProductoRepository productoRepository) : IProducto
         if (!string.IsNullOrEmpty(dto.Nombre)) producto.Nombre = dto.Nombre;
         if (!string.IsNullOrEmpty(dto.Descripcion)) producto.Descripcion = dto.Descripcion;
         if (dto.Precio.HasValue) producto.Precio = dto.Precio.Value;
-        if (dto.CategoriaId.HasValue) producto.CategoriaId = dto.CategoriaId.Value;
         if (dto.EsFavorito.HasValue) producto.EsFavorito = dto.EsFavorito.Value;
+
+        if (dto.CategoriaId.HasValue)
+        {
+            var categoria = await _categoryRepository.GetByIdAsync(dto.CategoriaId.Value);
+            if (categoria == null || categoria.RestauranteId != restauranteId)
+                throw new ArgumentException("La categoría indicada no existe o no pertenece a este restaurante.");
+            producto.CategoriaId = dto.CategoriaId.Value;
+        }
 
         await _productoRepository.SaveChangesAsync();
         return ToDto(producto);

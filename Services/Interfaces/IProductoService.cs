@@ -8,7 +8,7 @@ public interface IProductoService
     Task<List<ProductoResponseDto>> GetPorCategoriaAsync(int categoriaId);
     Task<List<ProductoResponseDto>> GetFavoritosAsync();
     Task<List<ProductoResponseDto>> GetEnOfertaAsync();
-    Task<ProductoResponseDto> CrearAsync(CrearProductoDto dto, int restauranteId);
+    Task<ProductoResponseDto?> CrearAsync(CrearProductoDto dto, int restauranteId);
     Task<ProductoResponseDto?> EditarAsync(int id, EditarProductoDto dto, int restauranteId);
     Task<bool> EliminarAsync(int id, int restauranteId);
     Task<ProductoResponseDto?> ModificarDescuentoAsync(int id, decimal descuento, int restauranteId);

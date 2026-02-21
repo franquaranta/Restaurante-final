@@ -29,8 +29,19 @@ public class ProductosController(IProductoService productoService) : BaseRestaur
     [HttpGet("filtrar")]
     public async Task<IActionResult> GetProductosPorCategoria([FromQuery] int categoriaId)
     {
-        var productos = await _productoService.GetPorCategoriaAsync(categoriaId);
-        return Ok(productos);
+        try
+        {
+            var productos = await _productoService.GetPorCategoriaAsync(categoriaId);
+
+            if (productos.Count == 0)
+                return NotFound("No hay productos en esta categoría.");
+
+            return Ok(productos);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpGet("favoritos")]
@@ -60,8 +71,15 @@ public class ProductosController(IProductoService productoService) : BaseRestaur
             return Unauthorized("Token inválido.");
         }
 
-        var producto = await _productoService.CrearAsync(dto, restauranteId.Value);
-        return CreatedAtAction(nameof(GetProductoDetalle), new { id = producto.Id }, producto);
+        try
+        {
+            var producto = await _productoService.CrearAsync(dto, restauranteId.Value);
+            return CreatedAtAction(nameof(GetProductoDetalle), new { id = producto!.Id }, producto);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{id}")]
@@ -75,14 +93,19 @@ public class ProductosController(IProductoService productoService) : BaseRestaur
             return Unauthorized("Token inválido.");
         }
 
-        var producto = await _productoService.EditarAsync(id, dto, restauranteId.Value);
-
-        if (producto == null)
+        try
         {
-            return NotFound("Producto no encontrado o sin permisos.");
-        }
+            var producto = await _productoService.EditarAsync(id, dto, restauranteId.Value);
 
-        return Ok(producto);
+            if (producto == null)
+                return NotFound("Producto no encontrado o sin permisos.");
+
+            return Ok(producto);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
